@@ -67,12 +67,17 @@ df_x_con_list = [dic['sensor_data'] for dic in df_x_list]
 #%%
 df_x_concat = pd.concat(df_x_con_list)
 df_x_clean = df_x_concat.drop_duplicates(subset=df_x_concat.columns[0])
-#df_x_clean = pd.to_numeric(df_x_clean, errors='coerce')
+
+#%%
+df_x_clean.to_pickle('X_data_pkl.pkl')
 #%%
 sensor_info = [pd.to_numeric(df_x_clean[i],errors='coerce').describe() for i in range(1,len(df_x_clean.columns))]
 #%%
 nans_info = [np.multiply(100,np.divide(pd.to_numeric(df_x_clean[i],errors='coerce').isnull().sum(),len(df_x_clean[i]))) for i in range(1,len(df_x_clean.columns))]
 
 #%%
-df_x_clean[1].plot(xticks = np.arange(0, len(df_x_clean[1]), step=20))
+plt.figure()
+plt.plot(np.gradient(df_x_clean[20]))
 
+#%%
+print(np.count_nonzero(df_x_clean[18]<30))
