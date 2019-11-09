@@ -72,7 +72,6 @@ df_x_concat = pd.concat(df_x_con_list)
 df_x_clean = df_x_concat.drop_duplicates(subset=df_x_concat.columns[0])
 #df_x_clean = df_x_concat
 #%%
-df_x_clean.to_pickle('X_data_pkl.pkl')
 
 #%%
 #################################################
@@ -178,6 +177,7 @@ df_feed1.to_pickle('df_feed1.pkl')
 # Feeder 2
 df_feed2 = df_x_feed2.merge(df_y_comp_labels[4], on='Time', how='left')
 df_feed2.to_pickle('df_feed2.pkl')                  
+
 
 #%%
 #%% 
