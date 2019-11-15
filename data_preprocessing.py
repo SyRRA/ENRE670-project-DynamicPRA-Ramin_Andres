@@ -36,11 +36,18 @@ print("--- %s seconds ---" % (time.time() - start_time))
 
 #%%
 # separate X and Y
-df_x = dataset_xlsx_all[1:]
+df_x = dataset_xlsx_all[2:]
 #%%
 df_y = dataset_xlsx_all[0] # This is failure data for 2018 -- The is the original excel is dataset_xlsx_all[-1]
 df_y.columns = df_y.iloc[0]
 df_y = df_y[1:]
+#%%
+# separate maintenance Z
+
+df_z = dataset_xlsx_all[1] # This is failure data for 2018 -- The is the original excel is dataset_xlsx_all[-1]
+df_z.columns = df_z.iloc[0]
+df_z = df_z[1:]
+
 
 #%%
 #################################################
@@ -156,7 +163,40 @@ df_y_comp_just_labels = [comp['Detencion'].replace(['Falla', 'FALLA'],[1,1]).fil
 #%%
 for i in range(len(df_y_comp_labels)):
     df_y_comp_labels[i]['Detencion'] = df_y_comp_just_labels[i]
-                   
+
+#%% 
+#################################################
+''' Erase maintenance logs - Z data'''
+
+# group by component 
+timestamp_z = df_x_clean.iloc[:,0]
+timestamp_z = timestamp_z.to_frame()
+timestamp_z.columns = ['Time']
+timestamp_z = pd.to_datetime(timestamp_z.iloc[:,0],infer_datetime_format=True)
+#components_list = [df_x_crusher, df_x_filter, df_x_belt, df_x_feed1, df_x_feed2]
+
+# Component label data
+#%%
+# floor to the minute
+df_z.iloc[:,5] = pd.to_datetime(df_z.iloc[:,5],infer_datetime_format=True)
+df_z.iloc[:,6] = pd.to_datetime(df_z.iloc[:,6],infer_datetime_format=True)
+df_z.iloc[:,5] = pd.Series(df_z.iloc[:,5]).dt.floor('min')
+df_z.iloc[:,6] = pd.Series(df_z.iloc[:,6]).dt.floor('min')
+#%%
+df_z.iloc[:,5] = df_z.iloc[:,5].dt.floor('120s')
+df_z.iloc[:,6] = df_z.iloc[:,6].dt.ceil('120s')
+
+#%%
+# create arranges for labeling 
+df_z_labels = pd.merge(timestamp_z, pd.concat([pd.DataFrame({'Time': pd.date_range(row.iloc[5], row.iloc[6], freq='120s'),
+                                                             'Mantencion': row.iloc[2]}, columns=['Time', 'Mantencion']) for i, row in df_z.iterrows()], ignore_index=True), on='Time', how='left')
+
+#%%
+# create labels ---- 0: normal, 1: maintenance
+df_z_comp_just_labels = df_z_labels['Mantencion'].replace('Mantención Programada',1).fillna(0) 
+df_z_labels['Mantencion'] = df_z_comp_just_labels
+
+    
 
 #%%
 #################################################
@@ -164,18 +204,28 @@ for i in range(len(df_y_comp_labels)):
 
 # Crusher
 df_crusher = df_x_crusher.merge(df_y_comp_labels[0], on='Time', how='left')
+df_crusher = df_crusher.merge(df_z_labels, on='Time', how='left')
+df_crusher.drop(df_crusher[df_crusher['Mantencion'] == 1].index, inplace = True) 
 df_crusher.to_pickle('df_crusher.pkl')               
 # Filter
 df_filter = df_x_filter.merge(df_y_comp_labels[1], on='Time', how='left')
+df_filter = df_filter.merge(df_z_labels, on='Time', how='left')
+df_filter.drop(df_filter[df_filter['Mantencion'] == 1].index, inplace = True) 
 df_filter.to_pickle('df_filter.pkl')
 # Belt
 df_belt = df_x_belt.merge(df_y_comp_labels[2], on='Time', how='left')
+df_belt = df_belt.merge(df_z_labels, on='Time', how='left')
+df_belt.drop(df_belt[df_belt['Mantencion'] == 1].index, inplace = True) 
 df_belt.to_pickle('df_belt.pkl')
 # Feeder 1
 df_feed1 = df_x_feed1.merge(df_y_comp_labels[3], on='Time', how='left')
+df_feed1 = df_feed1.merge(df_z_labels, on='Time', how='left')
+df_feed1.drop(df_feed1[df_feed1['Mantencion'] == 1].index, inplace = True) 
 df_feed1.to_pickle('df_feed1.pkl')
 # Feeder 2
 df_feed2 = df_x_feed2.merge(df_y_comp_labels[4], on='Time', how='left')
+df_feed2 = df_feed2.merge(df_z_labels, on='Time', how='left')
+df_feed2.drop(df_feed2[df_feed2['Mantencion'] == 1].index, inplace = True) 
 df_feed2.to_pickle('df_feed2.pkl')                  
 
 
