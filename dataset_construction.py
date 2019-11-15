@@ -24,37 +24,24 @@ print("--- %s seconds ---" % (time.time() - start_time))
 # Open datasets - timestamp is used in both x and y variables!
 # Crusher
 crusher_ = dataset_pkl_all[1]
-crusher_x = dataset_pkl_all[1].iloc[:,:-1]
-crusher_y = dataset_pkl_all[1].iloc[:,[0,-1]]
+crusher_x = dataset_pkl_all[1].iloc[:,:-2]
+crusher_y = dataset_pkl_all[1].iloc[:,[0,-2]]
 # Filter
 filter_ = dataset_pkl_all[4]
-filter_x = dataset_pkl_all[4].iloc[:,:-1]
-filter_y = dataset_pkl_all[4].iloc[:,[0,-1]]
+filter_x = dataset_pkl_all[4].iloc[:,:-2]
+filter_y = dataset_pkl_all[4].iloc[:,[0,-2]]
 # Belt
 belt_ = dataset_pkl_all[0]
-belt_x = dataset_pkl_all[0].iloc[:,:-1]
-belt_y = dataset_pkl_all[0].iloc[:,[0,-1]]
+belt_x = dataset_pkl_all[0].iloc[:,:-2]
+belt_y = dataset_pkl_all[0].iloc[:,[0,-2]]
 # Feeder 1
 feed1_ = dataset_pkl_all[2]
-feed1_x = dataset_pkl_all[2].iloc[:,:-1]
-feed1_y = dataset_pkl_all[2].iloc[:,[0,-1]]
+feed1_x = dataset_pkl_all[2].iloc[:,:-2]
+feed1_y = dataset_pkl_all[2].iloc[:,[0,-2]]
 # Feeder 2
 feed2_ = dataset_pkl_all[3]
-feed2_x = dataset_pkl_all[3].iloc[:,:-1]
-feed2_y = dataset_pkl_all[3].iloc[:,[0,-1]]
-
-#%%
-failure = filter_.loc[filter_['Detencion'] == 1]
-good = filter_.loc[filter_['Detencion'] == 0]
-#%%
-# All data
-#fig,ax = plt.plot()
-plt.figure()
-plt.hist(filter_[14].values, cumulative=True, density=True, bins=500)
-plt.hist(good[14].values, cumulative=True, density=True, bins=500, color = 'g',alpha=1)
-plt.hist(failure[14].values, cumulative=True, density=True, bins=500, color = 'r',alpha=0.3)
-
-#plt.xticks(np.arange(0,51,2))
+feed2_x = dataset_pkl_all[3].iloc[:,:-2]
+feed2_y = dataset_pkl_all[3].iloc[:,[0,-2]]
 
 #%%
 li = [crusher_y, filter_y, belt_y, feed1_y, feed2_y]
@@ -65,30 +52,87 @@ for i in li:
 total_failures = [df['Detencion'].sum() for df in li]
 
 #%%
-def plot_cdf(x,col):
-
-    x = x.iloc[:,1:]
-    fail = x.loc[x[col]==1]
-    good = x.loc[x[col]==0]
-    fig, ax = plt.subplots(len(x.columns)-1,1,squeeze=True)
-    for i in range(len(x.columns)-1):
-        ax[i].hist(x.iloc[:,i].values, cumulative=True, density=True, bins=500)
-        ax[i].hist(good.iloc[:,i].values, cumulative=True, density=True, bins=500, color='g', alpha=0.8)
-        ax[i].hist(fail.iloc[:,i].values, cumulative=True, density=True, bins=500, color='r', alpha=0.3)
-        ax[i].set_ylabel('sensor '+str(x.columns[i]))
-        
-    #fig.tight_layout()
-    plt.subplots_adjust(hspace=0.5)
-    plt.show()
+def plot_cdf(x,col,component='insert component name'):
     
-    return print(len(fail)), print(x.isna().sum()), len(x)
+    if component == 'Filter':
+        fail = filter_.loc[filter_['Detencion'] == 1]
+        good = filter_.loc[filter_['Detencion'] == 0]
+        plt.figure()
+        plt.hist(filter_[14].values, cumulative=True, density=True, bins=500)
+        plt.hist(good[14].values, cumulative=True, density=True, bins=500, color = 'g',alpha=1)
+        plt.hist(fail[14].values, cumulative=True, density=True, bins=500, color = 'r',alpha=0.3)
+        plt.ylabel('sensor '+str(filter_.columns[1]))
+        plt.title(component)
+        
+    else:       
+        x = x.iloc[:,1:]
+        fail = x.loc[x[col]==1]
+        good = x.loc[x[col]==0]
+        fig, ax = plt.subplots(len(x.columns)-2,1,squeeze=True)
+        for i in range(len(x.columns)-2):
+            ax[i].hist(x.iloc[:,i].values, cumulative=True, density=True, bins=500)
+            ax[i].hist(good.iloc[:,i].values, cumulative=True, density=True, bins=500, color='g', alpha=0.8)
+            ax[i].hist(fail.iloc[:,i].values, cumulative=True, density=True, bins=500, color='r', alpha=0.3)
+            ax[i].set_ylabel('sensor '+str(x.columns[i]))
+            
+        #fig.tight_layout()
+        plt.subplots_adjust(hspace=0.5)
+        plt.show()
+        fig.suptitle(component)
+    return print(len(fail)), print(100*np.divide(x.isna().sum(),len(x))), len(x)
     
     
     
 #%%
 # crusher must be done in two setps crusher.iloc[:,:6] , crusher.iloc[:,4:]
-plot_cdf(feed1_,'Detencion')
-    
+plot_cdf(crusher_,'Detencion','Crusher')
+
+#%%
+# Define label thresholds
+#from collections import defaultdict
+# Mean and std for failure data and normal data
+def mean_std_comp(x):
+    x = x.iloc[:,1:]
+    fail = x.loc[x['Detencion']==1]
+    ms_dict = {'sensor':[],'mean':[],'std':[],'p25,50,75,90,98':[]}
+    ms_dict_fail = {'sensor':[],'mean':[],'std':[],'p25,50,75,90,98':[]}
+    for i in range(len(x.columns)-2):            
+        ms_dict['sensor'].append(x.columns[i])
+        ms_dict['mean'].append(x.iloc[:,i].mean(skipna=True)) 
+        ms_dict['std'].append(x.iloc[:,i].std(skipna=True))
+        ms_dict['p25,50,75,90,98'].append(x.iloc[:,i].quantile([.25,.5,.75,.9,.98]))
+        
+        ms_dict_fail['sensor'].append(fail.columns[i])
+        ms_dict_fail['mean'].append(fail.iloc[:,i].mean(skipna=True)) 
+        ms_dict_fail['std'].append(fail.iloc[:,i].std(skipna=True))
+        ms_dict_fail['p25,50,75,90,98'].append(fail.iloc[:,i].quantile([.25,.5,.75,.9,.98]))
+
+    return ms_dict, ms_dict_fail
+#%%
+filter_ms, filter_ms_fail = mean_std_comp(filter_)
+
+#%%
+# Plot specific sensors
+plt.figure()
+a = filter_[14] #.interpolate(method='linear', axis=0).ffill()
+a.plot(style='o', ms=2)
+a.isna().sum()#plot()
+#feed1_['Detencion'].replace(1,10).plot(c='r')
+#crusher_['Detencion'].replace(1,10).plot(c='r')
+filter_['Detencion'].replace(1,10).plot(c='r')
+
+
+#%%      
+plt.figure()
+a = belt_[17] #.interpolate(method='linear', axis=0).ffill()
+a.plot(style='o', ms=2)
+a.isna().sum()#plot()
+#feed1_['Detencion'].replace(1,10).plot(c='r')
+#crusher_['Detencion'].replace(1,10).plot(c='r')
+filter_['Detencion'].replace(1,10).plot(c='r')
+belt_['Detencion'].replace(1,10).plot(c='g')
+
+
     
     
     
