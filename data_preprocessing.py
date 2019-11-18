@@ -78,7 +78,6 @@ df_x_con_list = [dic['sensor_data'] for dic in df_x_list]
 df_x_concat = pd.concat(df_x_con_list)
 df_x_clean = df_x_concat.drop_duplicates(subset=df_x_concat.columns[0])
 #df_x_clean = df_x_concat
-#%%
 
 #%%
 #################################################
@@ -226,7 +225,9 @@ df_feed1.to_pickle('df_feed1.pkl')
 df_feed2 = df_x_feed2.merge(df_y_comp_labels[4], on='Time', how='left')
 df_feed2 = df_feed2.merge(df_z_labels, on='Time', how='left')
 df_feed2.drop(df_feed2[df_feed2['Mantencion'] == 1].index, inplace = True) 
-df_feed2.to_pickle('df_feed2.pkl')                  
+df_feed2.to_pickle('df_feed2.pkl') 
+# Maintenance logs
+df_z_labels.to_pickle('maintenance_logs.pkl')           
 
 
 #%%
