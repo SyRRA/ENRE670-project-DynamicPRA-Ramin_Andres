@@ -42,8 +42,15 @@ feed1_y = dataset_pkl_all[2].iloc[:,[0,-2]]
 feed2_ = dataset_pkl_all[3]
 feed2_x = dataset_pkl_all[3].iloc[:,:-2]
 feed2_y = dataset_pkl_all[3].iloc[:,[0,-2]]
+# Maintenance logs
+maint_logs = dataset_pkl_all[5]
+#%% Max frame size
+#arr = maint_logs['Mantencion'].values
 
-#%%
+#Aa = (filter_['Time']-filter_['Time'].shift()).fillna(0)
+#Aaa = Aa.apply(lambda x: x  / np.timedelta64(1,'m')).astype('int64') % (24*60)
+
+#%% Total number of failures
 li = [crusher_y, filter_y, belt_y, feed1_y, feed2_y]
 num = 0
 for i in li:
@@ -51,6 +58,46 @@ for i in li:
     
 total_failures = [df['Detencion'].sum() for df in li]
 
+#%%
+crusher_time = crusher_['Time']
+crusher_delta = crusher_time.diff().fillna(0)
+delta = crusher_delta.apply(lambda x: x  / np.timedelta64(1,'m')).astype('int64') % (24*60)
+#%%
+new_time_df = pd.DataFrame({'Time':crusher_time,'delta':delta}).reset_index()
+frames_out = []
+frames_in = []
+for i in range(len(new_time_df)-1):
+    if (new_time_df['delta'][i+1]-new_time_df['delta'][i]) == 0:
+        frames_in.append(new_time_df['Time'][i])
+    else:
+        j=0
+        frames_out.append(pd.Series(frames_in, name=j))
+        frames_in = []
+        j+=1
+# sum(len(li) for li in frames_out2)
+#%%
+frames_out2 = [ix for ix in frames_out if len(ix)!=0]
+#%%
+frames_out2[0] = pd.date_range(new_time_df['Time'][0], frames_out2[0], freq='2min', closed=None)
+
+
+################################################
+################################################ until here everything is OK
+#%%
+# Generating TIME Windows - OK
+crusher_tw = [crusher_.set_index('Time').loc[frames] for frames in frames_out2]
+filter_tw = [filter_.set_index('Time').loc[frames] for frames in frames_out2]
+belt_tw = [belt_.set_index('Time').loc[frames] for frames in frames_out2]
+feed1_tw = [feed1_.set_index('Time').loc[frames] for frames in frames_out2]
+feed2_tw = [feed2_.set_index('Time').loc[frames] for frames in frames_out2]
+
+#%% amount of NaNs with failure label - Being developed
+AaA = crusher_.dropna()
+AaAa = crusher_.drop(AaA.index)
+print(AaAa['Detencion'].sum())
+
+################################################
+################################################ from here everything is OK    - data description and plots
 #%%
 def plot_cdf(x,col,component='insert component name'):
     
