@@ -139,28 +139,54 @@ feed1_tw = [[feed1_.loc[frames].iloc[:,:-2], feed1_.loc[frames].iloc[:,-2]] for 
 feed2_tw = [[feed2_.loc[frames].iloc[:,:-2], feed2_.loc[frames].iloc[:,-2]] for frames in frames_out2]
 
 #%%
-def time_window_train(comp,window_len):
-    for i in comp:        
-        x = i[0]
-        y = i[1]
-        x_aug = []
-        y_aug = []
-        if y.isnull().sum()>0:
-            num_frames = len(x) - time_window
-            for frame in range(num_frames)
-            x_aug.append()
-            y_aug.append()
+# Time window generation function
+def time_window(comp,window_len,t='train'): #this works for every frame in component; input must be specified as train or test set
+    x_aug = []
+    y_aug = []
+    for frame in comp:        
+        x = frame[0]
+        y = frame[1]
+        if len(y)>= window_len:
+            if t=='train' and y.sum()>0: # data augmentation for window generation
+                num_window = len(x) - window_len
+                for window in range(num_window):
+                    x_aug.append(x.iloc[window:window+window_len,:].values)
+                    y_aug.append(y.iloc[window+window_len-1])
+            else: # window generation
+                num_window = len(x)//window_len
+                for window in range(0,num_window*window_len,window_len):
+                    x_aug.append(x.iloc[window:window+window_len,:].values)
+                    y_aug.append(y.iloc[window+window_len-1])
+    return x_aug, y_aug #np arrays
 
 #%%##############################################
 ################################################  # Turning dataframes to X and Y arrays - feed models (sampling frequency: 2min)
+# testing one component frame generation - belt_
+train_pre = belt_tw[:-2]
+test_pre = belt_tw[-2:]
+#%%
+x_train, y_train = time_window(train_pre,42,t='train')
+#%%
+x_test, y_test = time_window(test_pre,42,t='test')
 
+#%%
+# crusher_tw
+x_train_crusher, y_train_crusher
+x_train_crusher, y_train_crusher
+# filter_tw
+x_train_crusher, y_train_crusher
+x_train_crusher, y_train_crusher
+# belt_tw
 
+# feed1_tw
+
+# feed2_tw
 
 #%%##############################################
 ################################################ from here everything is OK    - data description and plots
 
 #%%
-def plot_cdf(x,col,component='insert component name'):
+def plot_cdf(x,col,component='insert component name'): # this might have changed
     
     if component == 'Filter':
         fail = filter_.loc[filter_['Detencion'] == 1]
@@ -200,7 +226,7 @@ plot_cdf(filter_,'Detencion','Filter')
 #from collections import defaultdict
 # Mean and std for failure data and normal data
 def mean_std_comp(x):
-    x = x.iloc[:,1:]
+    x = x.iloc[:,1:] # this might have changed
     fail = x.loc[x['Detencion']==1]
     ms_dict = {'sensor':[],'mean':[],'std':[],'p25,50,75,90,98':[]}
     ms_dict_fail = {'sensor':[],'mean':[],'std':[],'p25,50,75,90,98':[]}
