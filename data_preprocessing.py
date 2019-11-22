@@ -50,7 +50,7 @@ df_z = df_z[1:]
 
 
 #%%
-#################################################
+################################################# -1
 ''' preprocessing X data '''
 
 # create a dictionary for x with keys: date_i, date_f, sensor_data
@@ -61,26 +61,21 @@ for dic in df_x_list:
     dic['sensor_data'].columns = np.arange(len(dic['sensor_data'].columns))
     
 #%%
-# clean the data
 
 for dic in df_x_list:
     dic['sensor_data'].iloc[:,1:] = dic['sensor_data'].iloc[:,1:][dic['sensor_data'].iloc[:,1:].applymap(isnumber)]
     dic['sensor_data'].iloc[:,0].replace(' ', np.nan, inplace=True)
     dic['sensor_data'] = dic['sensor_data'].dropna(subset=[0])
     dic['sensor_data'].reset_index(drop=True, inplace=True)
-    
-#%%
-# concatenate
-    
+       
 df_x_con_list = [dic['sensor_data'] for dic in df_x_list]
 
 #%%
 df_x_concat = pd.concat(df_x_con_list)
 df_x_clean = df_x_concat.drop_duplicates(subset=df_x_concat.columns[0])
-#df_x_clean = df_x_concat
 
 #%%
-#################################################
+################################################# -2
 ''' information from the dataset - relevant to cleaning '''
 #%% 
 # Sensor information
@@ -90,6 +85,8 @@ nans_info = [np.multiply(100,np.divide(pd.to_numeric(df_x_clean[i],errors='coerc
 # clean sensors 4,8 and 9
 df_x_clean.drop(columns=[5,9,10,12,13], inplace=True)
 #%%
+################################################# -3
+
 # Separate data by component - Components: crusher, filter, Belt, feed1, feed2
 
 # Crusher
@@ -118,7 +115,7 @@ df_x_feed2.rename(columns = {df_x_feed2.columns[0]:'Time'}, inplace=True)
 df_x_feed2['Time'] = pd.to_datetime(df_x_feed2['Time'],infer_datetime_format=True)
 
 #%%
-#################################################
+################################################# -4
 ''' preprocessing Y data '''
 
 # group by component 
@@ -140,6 +137,7 @@ df_y.iloc[:,5] = df_y.iloc[:,5].dt.floor('120s')
 df_y.iloc[:,6] = df_y.iloc[:,6].dt.ceil('120s')
 
 #%%
+################################################# -5
 # components grouping
 grouped_components = df_y.groupby('Equipo')
 #grouped_components.groups.keys()
@@ -164,7 +162,7 @@ for i in range(len(df_y_comp_labels)):
     df_y_comp_labels[i]['Detencion'] = df_y_comp_just_labels[i]
 
 #%% 
-#################################################
+################################################# -6
 ''' Erase maintenance logs - Z data'''
 
 # group by component 
@@ -172,7 +170,6 @@ timestamp_z = df_x_clean.iloc[:,0]
 timestamp_z = timestamp_z.to_frame()
 timestamp_z.columns = ['Time']
 timestamp_z = pd.to_datetime(timestamp_z.iloc[:,0],infer_datetime_format=True)
-#components_list = [df_x_crusher, df_x_filter, df_x_belt, df_x_feed1, df_x_feed2]
 
 # Component label data
 #%%
@@ -198,7 +195,7 @@ df_z_labels['Mantencion'] = df_z_comp_just_labels
     
 
 #%%
-#################################################
+################################################# -7
 ''' Save data for each component as a .pkl with datetimes()'''
 
 # Crusher
@@ -231,15 +228,3 @@ df_z_labels.to_pickle('maintenance_logs.pkl')
 
 
 #%%
-#%% 
-#################################################
-# NOTES
-#################################################
-
-# LOOK FOR A DELTA BEFORE AND AFTER THE PROPSED LABEL TO IDENTIFY ANOMALIES (BEGGENING AND INERTIA)
-# FILL NaNs IN THE SENSORS (OR CUT THEM OFF) - DECIDE
-
-    
-
-
-
