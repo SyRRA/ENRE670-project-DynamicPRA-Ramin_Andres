@@ -161,26 +161,38 @@ def time_window(comp,window_len,t='train'): #this works for every frame in compo
 
 #%%##############################################
 ################################################  # Turning dataframes to X and Y arrays - feed models (sampling frequency: 2min)
-# testing one component frame generation - belt_
-train_pre = belt_tw[:-2]
-test_pre = belt_tw[-2:]
-#%%
-x_train, y_train = time_window(train_pre,42,t='train')
-#%%
-x_test, y_test = time_window(test_pre,42,t='test')
 
-#%%
+# SAVE THE DATA AS .NPZ
 # crusher_tw
-x_train_crusher, y_train_crusher
-x_train_crusher, y_train_crusher
+x_train_crusher, y_train_crusher = time_window(crusher_tw[:-2],42,t='train')
+x_test_crusher, y_test_crusher = time_window(crusher_tw[-2:],42,t='test')
+np.savez('crusher_.npz', x_train=x_train_crusher, y_train=y_train_crusher, 
+         x_test=x_test_crusher, y_test=y_test_crusher)
+
 # filter_tw
-x_train_crusher, y_train_crusher
-x_train_crusher, y_train_crusher
+x_train_filter, y_train_filter= time_window(filter_tw[:-2],42,t='train')
+x_test_filter, y_test_filter= time_window(filter_tw[-2:],42,t='test')
+np.savez('filter_.npz', x_train=x_train_filter, y_train=y_train_filter, 
+         x_test=x_test_filter, y_test=y_test_filter)
+
 # belt_tw
+x_train_belt, y_train_belt= time_window(belt_tw[:-2],42,t='train')
+x_test_belt, y_test_belt= time_window(belt_tw[-2:],42,t='test')
+np.savez('belt_.npz', x_train=x_train_belt, y_train=y_train_belt, 
+         x_test=x_test_belt, y_test=y_test_belt)
 
 # feed1_tw
+x_train_feed1, y_train_feed1= time_window(feed1_tw[:-2],42,t='train')
+x_test_feed1, y_test_feed1= time_window(feed1_tw[-2:],42,t='test')
+np.savez('feed1_.npz', x_train=x_train_feed1, y_train=y_train_feed1, 
+         x_test=x_test_feed1, y_test=y_test_feed1)
 
 # feed2_tw
+x_train_feed2, y_train_feed2= time_window(feed2_tw[:-2],42,t='train')
+x_test_feed2, y_test_feed2= time_window(feed2_tw[-2:],42,t='test')
+np.savez('feed2_.npz', x_train=x_train_feed2, y_train=y_train_feed2, 
+         x_test=x_test_feed2, y_test=y_test_feed2)
+
 
 #%%##############################################
 ################################################ from here everything is OK    - data description and plots
