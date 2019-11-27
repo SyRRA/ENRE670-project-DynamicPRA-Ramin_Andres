@@ -44,16 +44,16 @@ feed2_x = dataset_pkl_all[3].iloc[:,:-1]
 feed2_y = dataset_pkl_all[3].iloc[:,[0,-1]]
 
 #%%
-failure = filter_.loc[filter_['Detencion'] == 1]
-good = filter_.loc[filter_['Detencion'] == 0]
+#failure = filter_.loc[filter_['Detencion'] == 1]
+#good = filter_.loc[filter_['Detencion'] == 0]
 #%%
 # All data
 #fig,ax = plt.plot()
-plt.figure()
-plt.hist(filter_[14].values, cumulative=True, density=True, bins=500)
-plt.hist(good[14].values, cumulative=True, density=True, bins=500, color = 'g',alpha=1)
-plt.hist(failure[14].values, cumulative=True, density=True, bins=500, color = 'r',alpha=0.3)
-
+#plt.figure()
+#plt.hist(filter_[14].values, cumulative=True, density=True, bins=500)
+#plt.hist(good[14].values, cumulative=True, density=True, bins=500, color = 'g',alpha=1)
+#plt.hist(failure[14].values, cumulative=True, density=True, bins=500, color = 'r',alpha=0.3)
+#
 #plt.xticks(np.arange(0,51,2))
 
 #%%
